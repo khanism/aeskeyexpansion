@@ -50,6 +50,7 @@ rcon_table = [0x8d, 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1b, 0x36, 
 def get_rcon_for(i):
     return (rcon_table[i], 0x00, 0x00, 0x00)
 
+
 def schedule_key(key_str: str, keylen: int):
     Nk = 0
     Nb = 4
@@ -61,6 +62,7 @@ def schedule_key(key_str: str, keylen: int):
         print("Invalid key lenght. Valid lengths are 128 or 256.")
         return
     
+    #Turn key to hex byte array
     key = bytearray.fromhex(key_str)
     print("Key is", key)
 
@@ -71,15 +73,14 @@ def schedule_key(key_str: str, keylen: int):
     #Number rounds. For Nk=4 => Nr=10, for Nk=8 => Nr=14
     Nr = 10 if Nk==4 else 14
 
-    for i in range(i, Nb * (Nr+1)):
+    for i in range(Nk, Nb * (Nr+1)):
         tmp = key_schedule[i-1]
         if (i % Nk) == 0:
             tmp = xor(sub_word(rot_word(tmp)), get_rcon_for(i//Nk))
         elif Nk > 6 and ((i%Nk) == 4):
             tmp = sub_word(tmp)
         key_schedule.append( xor(key_schedule[i-Nk], tmp) )
-
-    print("Nk:", Nk)
+    
     print_roundkeys(key_schedule, Nr)
 
 
@@ -95,7 +96,6 @@ for i in range(0,len(sys.argv)):
     if sys.argv[i] == "-len":
         keylen = int(sys.argv[i+1])
     elif sys.argv[i] == "-key":
-        #Turn key to hex byte array
         key_str = sys.argv[i+1]
 
 
